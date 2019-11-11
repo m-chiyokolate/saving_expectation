@@ -10,7 +10,10 @@
     >ヵ月分表示
     <div style="margin-top: 10px"><b-button @click="calc">calc</b-button></div>
     <hr />
-    {{ result }} 円
+    <div v-show="showResult">
+      1ヶ月：{{ resultOne }} 円
+      {{spanMonth}}ヶ月：{{ resultAll }} 円
+    </div>
   </div>
 </template>
 
@@ -19,14 +22,19 @@ import { Vue, Component } from "vue-property-decorator";
 
 @Component({})
 export default class MainPage extends Vue {
-  income: number = 0;
-  expense: number = 0;
+  income: number = 30000;
+  expense: number = 10000;
   spanMonth: number = 1;
 
-  result: number = 0;
+  resultOne: number = 0;
+  resultAll: number = 0;
+
+  showResult: boolean = false;
 
   calc() {
-    this.result = (this.income - this.expense) * this.spanMonth;
+    this.resultOne = this.income - this.expense;
+    this.resultAll = this.resultOne * this.spanMonth;
+    this.showResult = true;
   }
 }
 </script>
