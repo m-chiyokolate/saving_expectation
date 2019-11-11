@@ -1,30 +1,26 @@
 <template>
   <div>
-    <b-form-group label="income:" label-for="income" label-cols="1">
-      <b-form-input v-model="income" id="income"></b-form-input>
-    </b-form-group>
-    <b-form-group label="expense:" label-for="expense" label-cols="1">
-      <b-form-input v-model="expense" id="expense"></b-form-input>
-    </b-form-group>
+    <InputArea
+      ref="inputArea"></InputArea>
     <b-input v-model="spanMonth" style="width:60px; display: inline"></b-input
-    >ヵ月分表示
-    <div style="margin-top: 10px"><b-button @click="calc">calc</b-button></div>
+    >ヵ月分を
+    <b-button variant="primary" @click="calc">表示</b-button>
     <hr />
     <div v-show="showResult">
-      1ヶ月：{{ resultOne }} 円
-      {{spanMonth}}ヶ月：{{ resultAll }} 円
+      <div>1ヶ月のincome - expense：{{ resultOne }} 円</div>
+      <div>{{　spanMonthResult　}}ヶ月のincome - expense：{{ resultAll }} 円</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
+import InputArea from "./InputArea.vue";
 
-@Component({})
+@Component({components : { InputArea }})
 export default class MainPage extends Vue {
-  income: number = 30000;
-  expense: number = 10000;
   spanMonth: number = 1;
+  spanMonthResult: number = 0;
 
   resultOne: number = 0;
   resultAll: number = 0;
@@ -32,8 +28,30 @@ export default class MainPage extends Vue {
   showResult: boolean = false;
 
   calc() {
-    this.resultOne = this.income - this.expense;
-    this.resultAll = this.resultOne * this.spanMonth;
+    let income = this.$refs.inputArea.income;
+    let expense = this.$refs.inputArea.expense;
+    let periodicExpenses = this.$refs.inputArea.periodicExpenses;
+
+    // 1ヶ月分の計算
+    let oneMonthExpense: number = expense;
+    periodicExpenses.forEach(periodicExpense => {
+      // FIXME parseIntが必要な意味
+      oneMonthExpense += parseInt(periodicExpense.expense, 10);
+    });
+    this.resultOne = income - oneMonthExpense;
+
+    // 全ヶ月分の計算
+    let allExpense: number = expense * this.spanMonth;
+    periodicExpenses.forEach(periodicExpense => {
+      let baseMonth = this.spanMonth;
+      if (periodicExpense.month < this.spanMonth) {
+        baseMonth = periodicExpense.month;
+      }
+      allExpense += periodicExpense.expense * baseMonth;
+    });
+    this.resultAll = (income * this.spanMonth) - allExpense;
+
+    this.spanMonthResult = this.spanMonth;
     this.showResult = true;
   }
 }
